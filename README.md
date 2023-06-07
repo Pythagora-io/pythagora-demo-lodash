@@ -1,80 +1,124 @@
-# lodash
+# Lodash fork with Pythagora tests
 
-[Site](https://lodash.com/) |
-[Docs](https://lodash.com/docs) |
-[FP Guide](https://github.com/lodash/lodash/wiki/FP-Guide) |
-[Contributing](https://github.com/lodash/lodash/blob/master/.github/CONTRIBUTING.md) |
-[Wiki](https://github.com/lodash/lodash/wiki "Changelog, Roadmap, etc.") |
-[Code of Conduct](https://code-of-conduct.openjsf.org) |
-[Twitter](https://twitter.com/bestiejs) |
-[Chat](https://gitter.im/lodash/lodash)
-
-The [Lodash](https://lodash.com/) library exported as a [UMD](https://github.com/umdjs/umd) module.
-
-Generated using [lodash-cli](https://www.npmjs.com/package/lodash-cli):
-```shell
-$ npm run build
-$ lodash -o ./dist/lodash.js
-$ lodash core -o ./dist/lodash.core.js
+If you want to try it out yourself, just clone the repo and run:
+```bash
+npm i
+npx jest ./pythagora_tests/
 ```
 
-## Download
+## Bugs that Pythagora tests caught:
 
- * [Core build](https://raw.githubusercontent.com/lodash/lodash/4.17.10-npm/core.js) ([~4 kB gzipped](https://raw.githubusercontent.com/lodash/lodash/4.17.10-npm/core.min.js))
- * [Full build](https://raw.githubusercontent.com/lodash/lodash/4.17.10-npm/lodash.js) ([~24 kB gzipped](https://raw.githubusercontent.com/lodash/lodash/4.17.10-npm/lodash.min.js))
- * [CDN copies](https://www.jsdelivr.com/projects/lodash) [![jsDelivr Hits](https://data.jsdelivr.com/v1/package/npm/lodash/badge)](https://www.jsdelivr.com/package/npm/lodash)
+### Edge cases
+1. `size` gets tricked if there is an object with a `length` property:
+    ```javascript
+    test(`size({ 'a': 1, 'b': 2, 'length': 9 })`, () => {
+      expect(size({ 'a': 1, 'b': 2, 'length': 9 })).toBe(3);
+    });
+    ```
 
-Lodash is released under the [MIT license](https://raw.githubusercontent.com/lodash/lodash/4.17.10-npm/LICENSE) & supports modern environments.<br>
-Review the [build differences](https://github.com/lodash/lodash/wiki/build-differences) & pick one that’s right for you.
+2. `matches` fails when a `Symbol` is used as a key
+    ```javascript
+    test('should fail for non-matching objects with symbols', () => {
+      const symbolA = Symbol('a');
+      const symbolB = Symbol('b');
+      const matchesFunc = matches({ [symbolA]: 1, [symbolB]: 2 });
+      expect(matchesFunc({ [symbolA]: 1, [symbolB]: 5 })).toBeFalsy();
+    });
+    ```
 
-## Installation
+3. `mean` doesn't work when strings are passed into it:
+    ```javascript
+    test('test mean with values as strings', () => {
+      expect(mean(["5", "6", "7"])).toEqual(6);
+    });
+   ```
+---
 
-In a browser:
-```html
-<script src="lodash.js"></script>
-```
+### Bugs that are in the master but not in the live Lodash version
+1. `forOwnRight` doesn't add to array as intended:
+    ```javascript
+    test('should call iteratee in reverse order', () => {
+      const Foo = function() {
+        this.a = 1;
+        this.b = 2;
+      };
 
-Using npm:
-```shell
-$ npm i -g npm
-$ npm i lodash
-```
-Note: add `--save` if you are using npm < 5.0.0
+      Foo.prototype.c = 3;
 
-In Node.js:
-```js
-// Load the full build.
-var _ = require('lodash');
-// Load the core build.
-var _ = require('lodash/core');
-// Load the FP build for immutable auto-curried iteratee-first data-last methods.
-var fp = require('lodash/fp');
+      const result = [];
+      const iteratee = (value, key) => {
+        result.push(key);
+      }
 
-// Load method categories.
-var array = require('lodash/array');
-var object = require('lodash/fp/object');
+      forOwnRight(new Foo, iteratee);
 
-// Cherry-pick methods for smaller browserify/rollup/webpack bundles.
-var at = require('lodash/at');
-var curryN = require('lodash/fp/curryN');
-```
+      expect(result).toEqual(['b', 'a']);
+    });
+    ```
 
-Looking for Lodash modules written in ES6 or smaller bundle sizes? Check out [lodash-es](https://www.npmjs.com/package/lodash-es).
+2. `orderBy`
+    ```javascript
+    test('users with custom compare functions', () => {
+      const output = orderBy(users, ['user', 'age'], [
+        (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base' }),
+        (a, b) => a - b,
+      ]);
+      expect(output).toHaveLength(users.length);
+      expect(_.isEqual(output, [
+        { 'user': 'barney', 'age': 34 },
+        { 'user': 'barney', 'age': 36 },
+        { 'user': 'fred', 'age': 40 },
+        { 'user': 'fred', 'age': 48 }
+      ])).toBe(true);
+    });
 
-## Why Lodash?
+    test('users', () => {
+      const output = orderBy(users, ['user', 'age'], ['asc', 'desc']);
+      expect(output).toHaveLength(users.length);
+      expect(_.isEqual(output, [
+        { 'user': 'barney', 'age': 36 },
+        { 'user': 'barney', 'age': 34 },
+        { 'user': 'fred', 'age': 48 },
+        { 'user': 'fred', 'age': 40 }
+      ])).toBe(true);
+    });
+    ```
 
-Lodash makes JavaScript easier by taking the hassle out of working with arrays,<br>
-numbers, objects, strings, etc. Lodash’s modular methods are great for:
+3. `pick`
+    ```javascript
+    test('pick({"a": 1, "b": "2", "c": 3}, ["a", "c"])', () => {
+      expect(pick({"a": 1, "b": "2", "c": 3}, ["a", "c"])).toEqual({"a": 1, "c": 3});
+    });
 
- * Iterating arrays, objects, & strings
- * Manipulating & testing values
- * Creating composite functions
+    test('pick({"a": 1, "b": {"c": 2, "d": 3}}, ["b.c"])', () => {
+      expect(pick({"a": 1, "b": {"c": 2, "d": 3}}, ["b.c"])).toEqual({"b": {"c": 2}});
+    });
 
-## Module Formats
+    test('pick({"a": 1, "b": "2", "c": 3}, ["a", "c", "d"])', () => {
+      expect(pick({"a": 1, "b": "2", "c": 3}, ["a", "c", "d"])).toEqual({"a": 1, "c": 3});
+    });
+    ```
 
-Lodash is available in a [variety of builds](https://lodash.com/custom-builds) & module formats.
+4. `zipWith`
+    ```javascript
+    test('3', () => {
+      expect(zipWith([1, 2, 3], [4, 5, 6])).toEqual([[1, 4], [2, 5], [3, 6]]);
+    });
 
- * [lodash](https://www.npmjs.com/package/lodash) & [per method packages](https://www.npmjs.com/search?q=keywords:lodash-modularized)
- * [lodash-es](https://www.npmjs.com/package/lodash-es), [babel-plugin-lodash](https://www.npmjs.com/package/babel-plugin-lodash), & [lodash-webpack-plugin](https://www.npmjs.com/package/lodash-webpack-plugin)
- * [lodash/fp](https://github.com/lodash/lodash/tree/npm/fp)
- * [lodash-amd](https://www.npmjs.com/package/lodash-amd)
+    test('5', () => {
+      expect(zipWith([1, 2], [3, 4])).toEqual([[1, 3], [2, 4]]);
+    });
+
+    test('6', () => {
+      expect(zipWith([1, 2])).toEqual([[1], [2]]);
+    });
+    ```
+
+5. `update`
+    ```javascript
+    test('3', () => {
+      const object = { a: [{ b: { c: 3 } }] };
+      update(object, 'x[0].y.z', n => (n ? n + 1 : 0));
+      xpect(object).toEqual({ a: [{ b: { c: 3 } }], x: [{ y: { z: 0 } }] });
+    });
+   ```
