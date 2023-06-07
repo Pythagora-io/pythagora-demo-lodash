@@ -12,7 +12,7 @@ npx jest ./pythagora_tests/
 1. `size` gets tricked if there is an object with a `length` property:
     ```javascript
     test(`size({ 'a': 1, 'b': 2, 'length': 9 })`, () => {
-      expect(size({ 'a': 1, 'b': 2, 'length': 9 })).toBe(3);
+      expect(size({ 'a': 1, 'b': 2, 'length': 9 })).toBe(3); // lodash returns 9
     });
     ```
 
@@ -22,14 +22,14 @@ npx jest ./pythagora_tests/
       const symbolA = Symbol('a');
       const symbolB = Symbol('b');
       const matchesFunc = matches({ [symbolA]: 1, [symbolB]: 2 });
-      expect(matchesFunc({ [symbolA]: 1, [symbolB]: 5 })).toBeFalsy();
+      expect(matchesFunc({ [symbolA]: 1, [symbolB]: 5 })).toBeFalsy(); // lodash returns true
     });
     ```
 
 3. `mean` doesn't work when strings are passed into it:
     ```javascript
     test('test mean with values as strings', () => {
-      expect(mean(["5", "6", "7"])).toEqual(6);
+      expect(mean(["5", "6", "7"])).toEqual(6); // lodash returns 189
     });
    ```
 ---
@@ -69,7 +69,7 @@ npx jest ./pythagora_tests/
         { 'user': 'barney', 'age': 36 },
         { 'user': 'fred', 'age': 40 },
         { 'user': 'fred', 'age': 48 }
-      ])).toBe(true);
+      ])).toBe(true); // lodash returns false
     });
 
     test('users', () => {
@@ -80,37 +80,37 @@ npx jest ./pythagora_tests/
         { 'user': 'barney', 'age': 34 },
         { 'user': 'fred', 'age': 48 },
         { 'user': 'fred', 'age': 40 }
-      ])).toBe(true);
+      ])).toBe(true); // lodash returns false
     });
     ```
 
 3. `pick`
     ```javascript
     test('pick({"a": 1, "b": "2", "c": 3}, ["a", "c"])', () => {
-      expect(pick({"a": 1, "b": "2", "c": 3}, ["a", "c"])).toEqual({"a": 1, "c": 3});
+      expect(pick({"a": 1, "b": "2", "c": 3}, ["a", "c"])).toEqual({"a": 1, "c": 3}); // lodash returns false
     });
 
     test('pick({"a": 1, "b": {"c": 2, "d": 3}}, ["b.c"])', () => {
-      expect(pick({"a": 1, "b": {"c": 2, "d": 3}}, ["b.c"])).toEqual({"b": {"c": 2}});
+      expect(pick({"a": 1, "b": {"c": 2, "d": 3}}, ["b.c"])).toEqual({"b": {"c": 2}}); // lodash returns false
     });
 
     test('pick({"a": 1, "b": "2", "c": 3}, ["a", "c", "d"])', () => {
-      expect(pick({"a": 1, "b": "2", "c": 3}, ["a", "c", "d"])).toEqual({"a": 1, "c": 3});
+      expect(pick({"a": 1, "b": "2", "c": 3}, ["a", "c", "d"])).toEqual({"a": 1, "c": 3}); // lodash returns false
     });
     ```
 
 4. `zipWith`
     ```javascript
     test('3', () => {
-      expect(zipWith([1, 2, 3], [4, 5, 6])).toEqual([[1, 4], [2, 5], [3, 6]]);
+      expect(zipWith([1, 2, 3], [4, 5, 6])).toEqual([[1, 4], [2, 5], [3, 6]]); // lodash returns false
     });
 
     test('5', () => {
-      expect(zipWith([1, 2], [3, 4])).toEqual([[1, 3], [2, 4]]);
+      expect(zipWith([1, 2], [3, 4])).toEqual([[1, 3], [2, 4]]); // lodash returns false
     });
 
     test('6', () => {
-      expect(zipWith([1, 2])).toEqual([[1], [2]]);
+      expect(zipWith([1, 2])).toEqual([[1], [2]]); // lodash returns false
     });
     ```
 
@@ -119,6 +119,6 @@ npx jest ./pythagora_tests/
     test('3', () => {
       const object = { a: [{ b: { c: 3 } }] };
       update(object, 'x[0].y.z', n => (n ? n + 1 : 0));
-      xpect(object).toEqual({ a: [{ b: { c: 3 } }], x: [{ y: { z: 0 } }] });
+      expect(object).toEqual({ a: [{ b: { c: 3 } }], x: [{ y: { z: 0 } }] }); // lodash returns false
     });
    ```
