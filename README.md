@@ -34,7 +34,8 @@ npx jest ./pythagora_tests/
    ```
 ---
 
-### Bugs that are in the master but not in the live Lodash version
+### Bugs that are in the `master` branch
+P.S. The following bugs are NOT in the latest version of Lodash (4.17.15). I'm not sure how Lodash team works with the `master` branch so don't want to come across negatively towards the Lodash team if they have other workflows that allow master branch to be unstable. This is just to showcase bugs that Pythagora is able to detect.
 1. `forOwnRight` doesn't add to array as intended:
     ```javascript
     test('should call iteratee in reverse order', () => {
