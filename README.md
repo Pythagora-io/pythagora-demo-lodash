@@ -17,29 +17,6 @@ npx jest ./pythagora_tests/
       expect(size({ 'a': 1, 'b': 2, 'length': 9 })).toBe(3); // test returns 9
     });
     ```
-
-2. `matches` fails when a `Symbol` is used as a key
-    ```javascript
-    // { [symbolA]: 1, [symbolB]: 2 } should be different from { [symbolA]: 1, [symbolB]: 5 }
-    // so expected result is false but lodash returns true
-    test('should fail for non-matching objects with symbols', () => {
-      const symbolA = Symbol('a');
-      const symbolB = Symbol('b');
-      const matchesFunc = matches({ [symbolA]: 1, [symbolB]: 2 });
-      expect(matchesFunc({ [symbolA]: 1, [symbolB]: 5 })).toBeFalsy(); // test returns true
-    });
-    ```
-
-3. `mean` doesn't work when strings are passed into it:
-    ```javascript
-    // Lodash docs say that _.mean "Computes the mean of the values in array."
-    // it doesn't specify that you should send an array of numbers
-    // and if you send strings, it doesn't throw an error either
-    // rather, it returns a number but a wrong one
-    test('test mean with values as strings', () => {
-      expect(mean(["5", "6", "7"])).toEqual(6); // test returns 189
-    });
-   ```
 ---
 
 ### Bugs that are in the `master` branch
